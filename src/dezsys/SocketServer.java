@@ -7,7 +7,7 @@ import java.io.*;
  * @author Philipp Adler
  * @version 2015-11-27
  */
-public class SocketServer {
+public class SocketServer extends Thread{
 	
 	private ServerSocket server;
 	private Socket socket;
@@ -19,9 +19,20 @@ public class SocketServer {
 	public SocketServer(int port){
 		try {
 			this.server = new ServerSocket(port);
-			this.socket = server.accept();
+//			this.socket = server.accept();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	
+	@Override
+	public void run() {
+		super.run();
+		try {
+			this.socket = server.accept();
+		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
@@ -35,10 +46,14 @@ public class SocketServer {
 		String inputLine = "";
 		try {
 			BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
+			System.out.println(input);
 		    answer = input.readLine();
+		    System.out.println("RECEIVE FROM CLIENT "+answer);
+		    return answer;
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
+		System.out.println(answer);
 		return answer;
 	}
 
@@ -47,9 +62,11 @@ public class SocketServer {
 	 * @message die Message die verschickt wird
 	 */
 	public void send(String message){
+		System.out.println("send");
 		try {
 			PrintWriter out = new PrintWriter(this.socket.getOutputStream(), true);
 			out.println(message);
+			System.out.println("SENT TO CLIENT "+message);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

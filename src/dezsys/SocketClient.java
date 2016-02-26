@@ -8,7 +8,7 @@ import java.net.*;
  * @author Philipp Adler
  * @version 2015-11-27
  */
-public class SocketClient {
+public class SocketClient extends Thread{
 
 	private Socket socket;
 
@@ -49,6 +49,7 @@ public class SocketClient {
 	public void send(String message){
 		try {
 			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
+			System.out.println("SOCKAETCLIENT "+message);
 			out.println(message);
 		} catch (IOException e) {
 			e.printStackTrace();
