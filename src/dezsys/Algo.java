@@ -12,11 +12,11 @@ public class Algo {
 	
 	private String algoLeastCon() {
 		String ip = "";
-		int minAnz=999;
+		double minAnz=999;
 		int ind=-1;
 		for(int i =0; i < server.size() ; i++){
 			if(minAnz > server.get(i).getAnzCon()){
-				minAnz = server.get(i).getAnzCon();
+				//minAnz = server.get(i).getAnzCon();
 				ind = i;
 			}
 		}
@@ -28,7 +28,19 @@ public class Algo {
 	}
 	
 	private String algoWeightDist() {
-		return "";
+		String ip ="";
+		int ind =-1;
+		double leistung=999;
+		for(int i = 0; i < server.size(); i++){
+			if(leistung > server.get(i).calculateLeistung()){
+				//leistung = server.get(i).calculateLeistung();
+				ind = i;
+			}
+		}
+		ip = server.get(ind).getIP();
+		//erhoehen des counters
+		server.get(ind).connect();
+		return ip;
 		
 	}
 	public String getServer(int art){

@@ -3,8 +3,9 @@ package dezsys;
 public class Server {
 	private SocketServer server;
 	private SocketClient lb;
-	private int anzCon;
+	private double anzCon;
 	private String ip;
+	private double gewichtung;
 	
 //	public Server(String ip,int anzCon) {
 //		this.ip = ip;
@@ -12,7 +13,7 @@ public class Server {
 //	}
 	
 	public Server(int port){
-		System.out.println("Server läuft auf PORT: "+port);
+		System.out.println("Server laeuft auf PORT: "+port);
 		this.server = new SocketServer(port);
 	}
 	
@@ -20,7 +21,7 @@ public class Server {
 		this.lb = new SocketClient(url, port);
 	}
 	
-	public int getAnzCon(){
+	public double getAnzCon(){
 		return anzCon;
 	}
 	
@@ -35,5 +36,18 @@ public class Server {
 	public void disconnect (){
 		this.anzCon-=1;
 	}
-
+	
+	public double power (int base, int exponent){
+		return Math.pow(base,exponent);
+	}
+	
+	public double getGewichtung(){
+		return gewichtung;
+	}
+	
+	public double calculateLeistung() {
+		double a = anzCon/gewichtung;
+		return a;
+	}
+	
 }
