@@ -26,6 +26,7 @@ public class SocketClient extends Thread{
 			e.printStackTrace();
 		}
 	}
+	
 
 	/**
 	 * empfaengt Nachrichten vom Server
@@ -34,8 +35,13 @@ public class SocketClient extends Thread{
 	public String receive(){
 		String answer = "";
 		try {
-			BufferedReader input = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
-			answer = input.readLine();
+			//Get the return message from the server
+            InputStream is = socket.getInputStream();
+            InputStreamReader isr = new InputStreamReader(is);
+            BufferedReader br = new BufferedReader(isr);
+            answer = br.readLine();
+//            System.out.println("Message received from the server : " + answer);
+//            br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
@@ -48,9 +54,11 @@ public class SocketClient extends Thread{
 	 */
 	public void send(String message){
 		try {
-			PrintWriter out = new PrintWriter(socket.getOutputStream(), true);
-			System.out.println("SOCKAETCLIENT "+message);
-			out.println(message);
+			OutputStream os = socket.getOutputStream();
+            OutputStreamWriter osw = new OutputStreamWriter(os);
+            BufferedWriter bw = new BufferedWriter(osw);
+            bw.write(message + "\n");
+            bw.flush();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

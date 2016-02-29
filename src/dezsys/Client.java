@@ -1,19 +1,43 @@
 package dezsys;
 
-public class Client {
+public class Client extends Thread{
 	private SocketClient lb;//connect to LB
-	private SocketServer c;//for response
+	private SocketServer r;
+	private String ip;
 	
-	public Client(int port){
-		System.out.println("Client is running: "+port);
-		this.c = new SocketServer(port);
+	public Client(int serverport, String url, int port){
+		this.r = new SocketServer(serverport);
+		System.out.println("Client is running: "+serverport);
+		this.lb = new SocketClient(url, port);
+		this.ip = "localhost:"+serverport;
+		this.start();
 	}
 	
-	public void connectToLB(String url, int port){
-		this.lb = new SocketClient(url, port);
+	@Override
+	public void run() {
+		super.run();
+		this.receive();
 	}
 	
 	public void send(Integer zahl){
-		this.lb.send(zahl.toString());
+		System.out.println("SENDET ANFRAGE AN LB: "+zahl);
+		this.lb.send(zahl.toString()+","+this.ip);
+	}
+	
+	public void receive(){
+		System.out.println("CLIENT IS WAITING FOR RESULT");
+		String request;
+		while(true){
+			this.r.acceptSocket();
+			try{
+				request = this.r.receive();
+				if(request != null){//Client Anfrage
+					System.out.println("ERGEBNIS "+request);
+					this.r.closeSocket();
+				}
+			}catch(NullPointerException e){
+
+			}
+		}
 	}
 }

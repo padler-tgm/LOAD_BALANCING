@@ -8,10 +8,10 @@ import java.io.*;
  * @version 2015-11-27
  */
 public class SocketServer extends Thread{
-	
+
 	private ServerSocket server;
 	private Socket socket;
-	
+
 	/**
 	 * Erstellt einen Server, der auf eine Connection wartet
 	 * @param port Port auf dem die Nachrichten ausgetauscht werden
@@ -19,14 +19,32 @@ public class SocketServer extends Thread{
 	public SocketServer(int port){
 		try {
 			this.server = new ServerSocket(port);
-//			this.socket = server.accept();
+//			this.start();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void acceptSocket(){
+		try {
+			this.socket = this.server.accept();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+	
+	public void closeSocket(){
+		try {
+			this.socket.close();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 	}
 
-	
+
 	@Override
 	public void run() {
 		super.run();
@@ -45,15 +63,17 @@ public class SocketServer extends Thread{
 		String answer = "";
 		String inputLine = "";
 		try {
-			BufferedReader input = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-			System.out.println(input);
-		    answer = input.readLine();
-		    System.out.println("RECEIVE FROM CLIENT "+answer);
-		    return answer;
+			InputStream is = socket.getInputStream();
+			InputStreamReader isr = new InputStreamReader(is);
+			BufferedReader br = new BufferedReader(isr);
+			answer = br.readLine();
+			if(answer != null){
+				return answer;
+			}
+			br.close();
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
-		System.out.println(answer);
 		return answer;
 	}
 
@@ -62,16 +82,14 @@ public class SocketServer extends Thread{
 	 * @message die Message die verschickt wird
 	 */
 	public void send(String message){
-		System.out.println("send");
 		try {
 			PrintWriter out = new PrintWriter(this.socket.getOutputStream(), true);
 			out.println(message);
-			System.out.println("SENT TO CLIENT "+message);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 	}
-	
+
 	/**
 	 * Diese Methode beendet alle laufenden Prozesse
 	 */
