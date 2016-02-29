@@ -13,47 +13,11 @@ public class Algo {
 		this.server = new ArrayList<>();
 		this.relation = new HashMap<>();
 	}
-<<<<<<< HEAD
 
 	public void addServer(String url){
 		if(!this.server.contains(url)){
 			this.server.add(url);
 		}
-=======
-	
-	private String algoLeastCon() {
-		String ip = "";
-		double minAnz=999;
-		int ind=-1;
-		for(int i =0; i < server.size() ; i++){
-			if(minAnz > server.get(i).getAnzCon()){
-				//minAnz = server.get(i).getAnzCon();
-				ind = i;
-			}
-		}
-		ip = server.get(ind).getIP();
-		//erhoehen des counters
-		server.get(ind).connect();
-		return ip;
-		
-	}
-	
-	private String algoWeightDist() {
-		String ip ="";
-		int ind =-1;
-		double leistung=999;
-		for(int i = 0; i < server.size(); i++){
-			if(leistung > server.get(i).calculateLeistung()){
-				//leistung = server.get(i).calculateLeistung();
-				ind = i;
-			}
-		}
-		ip = server.get(ind).getIP();
-		//erhoehen des counters
-		server.get(ind).connect();
-		return ip;
-		
->>>>>>> f43d62506239f8ce9e04662cdb4de7f2886f372f
 	}
 
 	public String clearRelation(String url){
