@@ -37,7 +37,7 @@ public class LoadBalancer extends Thread{
 					}else if((request.split(" ")[0]).equals("Reply")){//SERVER ANTWORTET AUF ANFRAGE
 						String ip = request.split(" ")[2];
 						System.out.println("EMPFAENGT ERGEBNIS VOM SERVER "+ip);
-						this.pull(request.split(" ")[1],this.alg.clearRelation(ip));//SCHICKT ANTWORT AN CLIENT 
+						this.pull(request.split(" ")[1],this.alg.getRelationClient(ip));//SCHICKT ANTWORT AN CLIENT 
 						
 					}else{//ANFRAGE VOM CLIENT
 						System.out.println("ANFRAGE VOM CLIENT "+request.split(",")[1]+" :"+request.split(",")[0]);
