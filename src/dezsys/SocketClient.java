@@ -8,7 +8,7 @@ import java.net.*;
  * @author Philipp Adler
  * @version 2015-11-27
  */
-public class SocketClient extends Thread{
+public class SocketClient{
 
 	private Socket socket;
 

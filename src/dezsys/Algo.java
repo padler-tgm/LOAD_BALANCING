@@ -2,6 +2,7 @@ package dezsys;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.TimerTask;
 import java.util.Map.Entry;
 import java.util.UUID;
@@ -27,7 +28,7 @@ public class Algo extends Thread{
 	public String getRelationClient(String url){//LIEFERT DEN CLIENT WELCHER DIE ANTWORT VOM SERVER BEKOMMT
 		for(Entry<String, Connection> entry : this.relation.entrySet()) {
 			String server = entry.getKey();
-			if(server.contains(url)){
+			if(server.contains(url.split("\\?")[0])){
 				return entry.getValue().getUrl();
 			}
 		}
@@ -55,16 +56,16 @@ public class Algo extends Thread{
 				client.increase();//ERHOEHT CONNECTION ATTRIBUT
 				this.relation.put(server, client);//SPEICHERT DEN SELBEN CLIENT NUR DIE CONNECTION WURDE UM 1 ERHOEHT
 				session = true;
-				s = server.split("\\?")[1];
+				s = server;
 				break;
 			}
 		}
-		
+
 		if(!session){
 			System.out.println("FIRST TIME");
-			s = this.server.get(0);//STATTDESSEN ALGO
+			s = UUID.randomUUID()+"?"+this.server.get(0);//STATTDESSEN ALGO
 			System.out.println(s);
-			this.relation.put(UUID.randomUUID()+"?"+s, new Connection(url));
+			this.relation.put(s, new Connection(url));
 		}
 		return s;
 	}
@@ -85,17 +86,21 @@ public class Algo extends Thread{
 
 			System.out.println("TRY TO DELETE");
 			System.out.println(this.relation.entrySet().size());
-			for(Entry<String, Connection> entry : this.relation.entrySet()) {
+			Iterator<Entry<String, Connection>> it = this.relation.entrySet().iterator();
+			Iterator<Entry<String, Connection>> it1 = zahler.entrySet().iterator();
+			while (it.hasNext()){
+				Entry<String, Connection> entry = it.next();
 				String newKey = entry.getKey();
 				Connection newConnection = entry.getValue();
-				for(Entry<String, Connection> entry1 : zahler.entrySet()){
+				while (it1.hasNext()){
+					Entry<String, Connection> entry1 = it1.next();
 					String oldKey = entry1.getKey();
 					Connection oldConnection = entry1.getValue();
 					//WENN DER CLIENT KEINE ANFRAGEN MEHR GETAETIGT HAT
 					if(newKey.equals(oldKey) && newConnection.getConnection() == oldConnection.getConnection()){
 						if(this.relation.containsKey(newKey)){
 							System.out.println("DELETE SESSION "+newKey);
-							this.relation.remove(newKey);
+							it.remove();
 						}
 					}
 				}

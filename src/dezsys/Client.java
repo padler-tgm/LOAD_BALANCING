@@ -5,10 +5,9 @@ public class Client extends Thread{
 	private SocketServer r;
 	private String ip;
 	
-	public Client(int serverport, String url, int port){
+	public Client(int serverport){
 		this.r = new SocketServer(serverport);
 		System.out.println("Client is running: "+serverport);
-		this.lb = new SocketClient(url, port);
 		this.ip = "localhost:"+serverport;
 		this.start();
 	}
@@ -19,7 +18,8 @@ public class Client extends Thread{
 		this.receive();
 	}
 	
-	public void send(Integer zahl){
+	public void send(Integer zahl, String url, int port){
+		this.lb = new SocketClient(url, port);
 		System.out.println("SENDET ANFRAGE AN LB: "+zahl);
 		this.lb.send(zahl.toString()+","+this.ip);
 	}
@@ -40,4 +40,5 @@ public class Client extends Thread{
 			}
 		}
 	}
+
 }

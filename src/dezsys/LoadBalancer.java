@@ -67,10 +67,11 @@ public class LoadBalancer extends Thread{
 //	}
 
 	private void push(String message, String ip){//LB fungiert als Client und schickt an Server
-		String serverip = alg.getServer(ip);//BEKOMMT EINEN ZUFAELLIGEN SERVER
+		String server = alg.getServer(ip);//BEKOMMT EINEN ZUFAELLIGEN SERVER
+		String serverip = server.split("\\?")[1];
 		this.lbc = new SocketClient(serverip.split(":")[0],Integer.parseInt(serverip.split(":")[1]));
 		System.out.println("SEND TO SERVER " + serverip+" "+message);
-		this.lbc.send(message);
+		this.lbc.send(server.split("\\?")[0]+"?"+message);
 	}
 
 	private void pull(String message, String ip){//LB fungiert als Server und schickt an Client

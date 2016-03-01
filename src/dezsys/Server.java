@@ -5,6 +5,7 @@ public class Server extends Thread{
 	private SocketClient lb;//connect to LB
 	private int anzCon;
 	private String ip;
+	private String LBIP;
 	
 //	public Server(String ip,int anzCon) {
 //		this.ip = ip;
@@ -33,8 +34,8 @@ public class Server extends Thread{
 				if((request = this.server.receive()) != null){//Client Anfrage
 					System.out.println("LB ANFRAGE "+request);
 					this.server.closeSocket();
-					System.out.println("SERVER SENDET ERGEBNIS AN LB: "+Integer.parseInt(request)*2);
-					this.send("localhost", 9999, "Reply "+(Integer.parseInt(request)*2)+" "+this.ip);
+					System.out.println("SERVER SENDET ERGEBNIS AN LB: "+Integer.parseInt(request.split("\\?")[1])*2);
+					this.send(this.LBIP.split(":")[0], Integer.parseInt(this.LBIP.split(":")[1]), "Reply "+(Integer.parseInt(request.split("\\?")[1])*2)+" "+request.split("\\?")[0]+"?"+this.ip);
 				}
 			}catch(NullPointerException e){
 
@@ -43,6 +44,7 @@ public class Server extends Thread{
 	}
 	
 	public void connectToLB(String url, int port){
+		this.LBIP = url+":"+port;
 		System.out.println("REGISTRIERT SICH BEIM LB");
 		this.send(url, port, "Register "+this.ip);
 	}

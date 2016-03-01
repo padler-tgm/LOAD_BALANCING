@@ -1,0 +1,119 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="Adler_Philipp" basedir="." default="run">
+    
+	<!-- Gibt den Build Ordner an-->
+	<property name = "buildpath" value = "adlerkaric" />
+    <property name = "source" value = "${buildpath}/src" />
+    <property name = "class" value = "${buildpath}/class" />
+    <property name = "doc" value = "${class}/javadoc" />
+    <property name = "jar" value = "${buildpath}/" />
+    <property name = "test" value = "${buildpath}/test" />
+    <property name = "lib" value = "./lib" />
+    <property name = "extra" value = "./extra" />
+    
+    <path id="classpath">
+        <fileset dir="${lib}" id="library">
+            <include name="*.jar"/>
+        </fileset>
+    </path>
+    
+	<fileset dir="./src/" id="java">
+		<include name="**/*.java" />
+	</fileset>
+
+    <fileset dir="${extra}" id="extra">
+        <include name="**/*.*" />
+    </fileset>
+    
+	<!-- target clean loescht den oben angegebenen Build Ordner-->
+    <target name="clean">
+		<delete dir="${buildpath}" />
+	</target>
+    
+	<target name="create" depends="clean">
+		<mkdir dir = "./${buildpath}" />
+	</target>
+    
+	<target name="copy" depends="create">
+		<mkdir dir = "./${source}" />
+		<copy todir="./${source}">
+			<fileset refid="java" />
+		</copy>
+	</target>
+    
+	<target name="run" depends="compile">
+        <antcall target="doc"/>
+        <antcall target="jar"/>
+        <move todir="${buildpath}/javadoc">
+            <fileset dir="${doc}"/>
+        </move>
+        <echo message="Für das Ausführen des Jar müssen Sie runjar eingeben!!"/>
+	</target>
+    
+    <target name="doc">
+        <mkdir dir = "./${doc}" />
+        <javadoc sourcepath="${source}" destdir="${doc}"/>
+    </target>
+    
+    <target name="compile" depends="copy">
+		<mkdir dir = "./${class}" />
+		<javac srcdir="${source}" destdir="${class}" includeantruntime="false">
+            <classpath refid="classpath"/>
+        </javac>
+        
+        <copy todir="${class}">
+			<fileset refid="library" />
+            <fileset refid="extra" />
+		</copy>
+	</target>
+    
+    <target name="jar" depends="input,input2">
+        <mkdir dir="${jar}"/>
+        <manifestclasspath property="jar.classpath" jarfile="${jar}/${programm}1.jar">
+            <classpath refid="classpath"/>
+        </manifestclasspath>
+        
+        <jar destfile="${jar}/${programm}1.jar" basedir="${class}">
+            <fileset dir="${source}" />
+            <manifest>
+                <attribute name="Main-Class" value="${mainclass}"/>
+                <attribute name="Class-Path" value="${jar.classpath}"/>
+            </manifest>
+            <zipgroupfileset dir="${lib}" includes="**/*.jar" />
+        </jar>
+        <zip file="${jar}/${programm}.jar">
+            <zipfileset src="${jar}/${programm}1.jar">
+                <exclude name="*.jar"/>
+            </zipfileset>
+        </zip>
+        <delete file="${jar}/${programm}1.jar" />
+        <touch file="${buildpath}/build.properties" />
+		<echo file="${buildpath}/build.properties" append="true">${programm}</echo>
+
+    </target>
+    
+    <target name="input">
+		<input message="Jar-Name?" addproperty="programm"/>
+	</target>
+    
+    <target name="input2">
+		<input message="Main-Class, falls in einem Package dann Packagename.MainClass?" addproperty="mainclass"/>
+	</target>
+    
+    <target name="runjar">
+        <loadfile property="file" srcfile="${buildpath}/build.properties" />
+	<echo>Ich empfehle Ihnen nur eine Maschine zu starten:
+	Entweder den LoadBalancer -lp PORT
+	Oder Client -cp PORT -m ZAHL -u URL:PORT 
+	Oder -sp PORT -u URL:PORT</echo>
+        <java jar="${jar}/${file}.jar" fork="true"/>
+    </target>
+    
+    <target name="ftp">
+        <property file = "${buildpath}/../ssh.properties" />
+        <loadfile property="file" srcfile="${buildpath}/build.properties" />
+        <scp todir="${ssh.user}:${ssh.passwd}@${ssh.host}:${ssh.path}">
+			<fileset dir="${buildpath}/" />
+		</scp>
+    </target>
+</project>
