@@ -1,5 +1,8 @@
 package dezsys;
 
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
+
 public class Client extends Thread{
 	private SocketClient lb;//connect to LB
 	private SocketServer r;
@@ -8,8 +11,12 @@ public class Client extends Thread{
 	public Client(int serverport){
 		this.r = new SocketServer(serverport);
 		System.out.println("Client is running: "+serverport);
-		this.ip = "localhost:"+serverport;
-		this.start();
+		try {
+			this.ip = Inet4Address.getLocalHost().getHostAddress()+":"+serverport;
+			this.start();
+		} catch (UnknownHostException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	@Override
