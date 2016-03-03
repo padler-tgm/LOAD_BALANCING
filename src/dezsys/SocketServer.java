@@ -25,7 +25,9 @@ public class SocketServer extends Thread{
 			e.printStackTrace();
 		}
 	}
-	
+	/**
+	 * Methode zum akzeptieren der Verbindung
+	 */
 	public void acceptSocket(){
 		try {
 			this.socket = this.server.accept();
@@ -34,7 +36,9 @@ public class SocketServer extends Thread{
 			e.printStackTrace();
 		}
 	}
-	
+	/**
+	 * Methode zum Schliessen der Verbindung
+	 */
 	public void closeSocket(){
 		try {
 			this.socket.close();
@@ -44,7 +48,9 @@ public class SocketServer extends Thread{
 		}
 	}
 
-
+	/**
+	 * Ueberschriebene run-Methode
+	 */
 	@Override
 	public void run() {
 		super.run();
@@ -63,6 +69,7 @@ public class SocketServer extends Thread{
 		String answer = "";
 		String inputLine = "";
 		try {
+			//Nachricht
 			InputStream is = socket.getInputStream();
 			InputStreamReader isr = new InputStreamReader(is);
 			BufferedReader br = new BufferedReader(isr);

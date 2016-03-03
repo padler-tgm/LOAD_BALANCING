@@ -6,14 +6,21 @@ import java.util.Iterator;
 import java.util.TimerTask;
 import java.util.Map.Entry;
 import java.util.UUID;
-
+/**
+ * Die Klasse Algo verwaltet die Loadbalancing-Algortihmen
+ * @author Philipp Adler
+ * @author Adin Karic
+ * @version 2016-03-03
+ */
 public class Algo extends Thread{
-	//LIEFERT DIE IP DES SERVERS
-	//BENÖTIGT SERVER POLL MIT ALLEN IPS
+	//Collections fuer Server und connections
 	private HashMap<String, ServerProperties> server;
 	private HashMap<String, Connection> relation;
 	private int mode;
-
+	/**
+	 * Konstruktor der Algo-Klasse
+	 * @param mode Parameter der bestimmt ob man Least Connection(1) oder Weighted Distribution(2) benutzt wird
+	 */
 	public Algo(int mode){
 		this.server = new HashMap<>();
 		this.relation = new HashMap<>();
@@ -22,27 +29,40 @@ public class Algo extends Thread{
 		if(mode == 2)System.out.println("Weighted Distribution");
 		this.start();
 	}
-
+	/**
+	 * Methode zum Hinzufuegen von Server
+	 * @param url
+	 */
 	public void addServer(String url){
+		//wenn server noch nicht vorhanden
 		if(!this.server.containsKey(url)){
 			this.server.put(url,new ServerProperties());
 		}
 	}
-
-	public String getRelationClient(String url){//LIEFERT DEN CLIENT WELCHER DIE ANTWORT VOM SERVER BEKOMMT
+	/**
+	 * Liefert den Client welcher die Antwort vom Server bekommt
+	 * @param url die url
+	 * @return der Client
+	 */
+	public String getRelationClient(String url){
 		for(Entry<String, Connection> entry : this.relation.entrySet()) {
 			String server = entry.getKey();
 			if(server.contains(url.split("\\?")[0])){
+				//client
 				return entry.getValue().getUrl();
 			}
 		}
 		return null;
 	}
 
-
+	/**
+	 * Methode zum Loeschen von Servern
+	 * @param url Url des zu loeschenden Servers
+	 */
 	public void deleteServer(String url){
 		Iterator<Entry<String, Connection>> it = this.relation.entrySet().iterator();
-		while (it.hasNext()){//DELETE SERVER FROM RELEATION MAP
+		//Server wird von der relation map geloescht
+		while (it.hasNext()){
 			Entry<String, Connection> entry = it.next();
 			String server = entry.getKey();
 			if(server.contains(url.split(" ")[1])){
@@ -50,13 +70,14 @@ public class Algo extends Thread{
 			}
 		}
 		System.out.println("DELETE SERVER: "+url.split(" ")[1]);
-		server.remove(url);//DELETE SERVER FROM LIST
+		//server von der liste entfernen
+		server.remove(url);
 	}
 
 	/**
-	 * 
-	 * @param url Lieft die Adresse vom Server an dem die Client Anfrage gesendet wird
-	 * @return
+	 * Liefert die Adresse vom Server an den die Client Anfrage gesendet wird
+	 * @param url die url
+	 * @return adresse vom server
 	 */
 	public String getServer(String url){
 		String s = null;
@@ -64,12 +85,16 @@ public class Algo extends Thread{
 		for(Entry<String, Connection> entry : this.relation.entrySet()) {
 			String server = entry.getKey();
 			Connection client = entry.getValue();
-			if(client.getUrl().equals(url)){//DER CLIENT HAT SCHON EINMAL EINE ANFRAGE GESCHICKT
+			//client hat schon einmal eine Anfrage geschickt
+			if(client.getUrl().equals(url)){
 				System.out.println("SESSION");
-				client.increase();//ERHOEHT CONNECTION ATTRIBUT
-				this.relation.put(server, client);//SPEICHERT DEN SELBEN CLIENT NUR DIE CONNECTION WURDE UM 1 ERHOEHT
+				//anzahl der connections erhoehen
+				client.increase();
+				//speichert den selben client nochmal nur connections um 1 erhoeht
+				this.relation.put(server, client);
 				ServerProperties pro = this.server.get(server.split("\\?")[1]);
-				pro.increaseAnzCon();//ERHOEHT DIE CONNECTION ANZAHL AM SERVER
+				//erhoeht anzahl der connections am server
+				pro.increaseAnzCon();
 				this.server.put(server.split("\\?")[1], pro);
 				session = true;
 				System.out.println(server);
@@ -77,30 +102,34 @@ public class Algo extends Thread{
 				break;
 			}
 		}
-
+		//wenn erstes mal anfrage
 		if(!session){
 			System.out.println("FIRST TIME");
-			s = UUID.randomUUID()+"?"+this.getServer(this.mode);//STATTDESSEN ALGO
+			s = UUID.randomUUID()+"?"+this.getServer(this.mode);
 			this.relation.put(s, new Connection(url));
 		}
 		return s;
 	}
-
+	/**
+	 * ueberschriebene run-methode des Threads
+	 */
 	@Override
 	public void run() {
+		//endlosschleife
 		while(true){
 			System.out.println("TRY TO DELETE WAIT FOR 20 SEK");
-			//VIELLEICHT DIREKTE REFERENZE AUF ADRESSE
 			HashMap<String, Connection> zahler = new HashMap<>();
 			for(Entry<String, Connection> entry : this.relation.entrySet()) {
 				String key = entry.getKey();
 				Connection value = entry.getValue();
 				Connection con = new Connection(key.split("\\?")[1]);
+				//connection wird gesetzt
 				con.setConnection(value.getConnection());
 				zahler.put(key, con);
 			}
 			
 			for(Entry<String, Connection> entry : zahler.entrySet()) {
+				//ausgabe
 				String key = entry.getKey();
 				Connection value = entry.getValue();
 				System.out.println("BEFORE Zahler: "+key+" "+value.getConnection());
@@ -125,6 +154,7 @@ public class Algo extends Thread{
 				try{
 					if(zahler.get(newKey).getConnection() == newConnection.getConnection()){
 						System.out.println("OLD "+zahler.get(newKey).getConnection()+" NEW "+newConnection.getConnection());
+						//session wird beendet
 						System.out.println("DELETE SESSION "+newKey);
 						it.remove();
 					}
@@ -150,16 +180,21 @@ public class Algo extends Thread{
 			//			}
 		}
 	}
-
+	/**
+	 * Methode zum Beenden der Aufgabe
+	 */
 	private void completeTask(){
 		try {
-			//assuming it takes 20 secs to complete the task
+			//angenommen task dauert 20 sek
 			Thread.sleep(20000);
 		} catch (InterruptedException e) {
 			e.printStackTrace();
 		}
 	}
-
+	/**
+	 * Methode zur Anwendung des Least-Connection Algorithmus
+	 * @return die ip des zugeteilten servers
+	 */
 	private String algoLeastCon() {
 		String ip = "";
 		ServerProperties s = null;
@@ -167,6 +202,7 @@ public class Algo extends Thread{
 		for(Entry<String, ServerProperties> entry : this.server.entrySet()) {
 			String key = entry.getKey();
 			ServerProperties value = entry.getValue();
+			//wenn die derzeitige minAnzahl an Connections groesser als die des servers in liste
 			if(minAnz > value.getAnzCon()){
 				minAnz = value.getAnzCon();
 				ip = key;
@@ -179,7 +215,10 @@ public class Algo extends Thread{
 		return ip;
 
 	}
-	//	
+	/**
+	 * Methode zur Anwendung des Weighted Distribution Algorithmus
+	 * @return die ip des zugeteilten servers
+	 */
 	private String algoWeightDist() {
 		String ip ="";
 		ServerProperties s = null;
@@ -187,6 +226,8 @@ public class Algo extends Thread{
 		for(Entry<String, ServerProperties> entry : this.server.entrySet()) {
 			String key = entry.getKey();
 			ServerProperties value = entry.getValue();
+			//wenn leistungsnummer groesser als die kalkulierte des jeweiligen servers
+			//je kleiner die zahl desto besser
 			if(leistung > value.calculateLeistung()){
 				leistung = value.calculateLeistung();
 				ip = key;
@@ -198,9 +239,15 @@ public class Algo extends Thread{
 		this.server.put(ip, s);
 		return ip;
 	}
-
+	/**
+	 * Methode die die IP des Servers zurueckgibt der zugeteilt werden soll
+	 * @param art die Art des Load Balancing (Weighted Distribution oder Least Connections)
+	 * @return die IP des servers
+	 */
 	private String getServer(int art){
 		String ip="";
+		//wenn 1 --> Least Connections
+		//wenn 2 --> Weighted Distribution
 		if(art == 1){
 			ip = this.algoLeastCon();
 		}else if(art == 2){

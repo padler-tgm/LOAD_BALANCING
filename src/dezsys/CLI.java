@@ -10,24 +10,28 @@ import org.apache.commons.cli.GnuParser;
 import org.apache.commons.cli.Option;
 import org.apache.commons.cli.Options;
 import org.apache.commons.cli.ParseException;
-
+/**
+ * Klasse fuer die CLI-Funktionalitaet
+ * @author Philipp Adler
+ * @version 2016-03-03
+ */
 public class CLI {
+	//verschiedene parameter
 	public static String[][] optionen = {
 		{"lp", "true", "LoadBalancer Port"},{"least", "false", "Least Connection"},{"weight", "false", "Weighted Distribution"},
 		{"cp", "true", "Client Port"},
 		{"sp", "true", "Server Port"},
 		{"lu", "true", "Adresse des LB(url:port)"}};
 	private CommandLine cmd;//hier ist gespeichert ob die Option verwendet wurde und wenn die Value der Option
-	private Options options;//speichert sich die Optionen die verwendet werden können
+	private Options options;//speichert sich die Optionen die verwendet werden koennen
 	private Map<String, String> arguments;//speichert sich die Value der Optionen
 
 	/**
 	 * Der Konstruktor nimmt eine Liste von Optionen entgegen die von Application verwaltet werden
-	 * Diese sind hostname, user, passwort, datenbank, spalte, sortierung, query, trennzeichen, spalten,
-	 * datei, tabelle.
 	 */
 	public CLI(){
-		this.options = new Options();//speichert sich alle Optionen in einem Objekt
+		//speichert sich alle Optionen in einem Objekt
+		this.options = new Options();
 		System.out.println("Parameter:");
 		for(int i=0; i<optionen.length; i++){//gibt alle Optionen aus
 			for(int j=0; j<optionen[i].length; j++){
@@ -40,7 +44,7 @@ public class CLI {
 	}
 
 	/**
-	 * Diese Methode fügt eine neue Option hinzu
+	 * Diese Methode fuegt eine neue Option hinzu
 	 * @param opt die Option z.B. h, a, ..
 	 * @param hasArg ob die Option ein Value hat
 	 * @param description die Beschreibung der Option
@@ -51,7 +55,7 @@ public class CLI {
 	}
 
 	/**
-	 * Diese Methode gibt alle Optionen zurück
+	 * Diese Methode gibt alle Optionen zurueck
 	 * @return alle Optionen die es gibt
 	 */
 	private Options getOptions(){
@@ -59,13 +63,14 @@ public class CLI {
 	}
 
 	/**
-	 * In dieser Methode werden die Argumente von CLI übergeben
+	 * In dieser Methode werden die Argumente von CLI uebergeben
 	 * @param args die Argumente die der Benutzer eingegeben hat
 	 */
 	public void addArguments(String[] args){
 		CommandLineParser parser = new GnuParser();
 		try {
-			this.cmd = parser.parse(this.options, args);//hier steht welche Option verwendet und welche Value die Option hat
+			//hier steht welche Option verwendet und welche Value die Option hat
+			this.cmd = parser.parse(this.options, args);
 		} catch (ParseException e) {
 			e.printStackTrace();
 		}
@@ -74,8 +79,8 @@ public class CLI {
 
 	/**
 	 * Diese Methode benutzt den CommandLineParser um zu kontrollieren welche Optionen der Benutzer gewählt hat
-	 * @param cmd der CommandLineParser der die verwendeten Optionen und die dazugehörige Value beinhaltet
-	 * @return die Values um eine Query zu bilden
+	 * @param cmd der CommandLineParser der die verwendeten Optionen und die dazugehoerige Value beinhaltet
+	 * @return map mit Options
 	 */
 	private Map<String,String> getOptionValue(CommandLine cmd) {
 		Map<String,String> map = new HashMap<>();
@@ -94,7 +99,7 @@ public class CLI {
 	}
 
 	/**
-	 * Diese Methode gibt zum angegebenen Key die Value zurück
+	 * Diese Methode gibt zum angegebenen Key die Value zurueck
 	 * @param key der Key von der die Value gesucht wird
 	 * @return die Value zum angegegebenen Key
 	 */
