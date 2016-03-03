@@ -26,5 +26,9 @@ public class Connection {
 		this.connection += 1;
 	}
 	
+	public void setConnection(int c){
+		this.connection = c;
+	}
+	
 	
 }

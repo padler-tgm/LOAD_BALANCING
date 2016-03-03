@@ -4,12 +4,23 @@ import java.util.Scanner;
 
 public class Main {
 	public static void main(String[] args) {
+
+		System.out.println("Ich empfehle Ihnen nur eine Maschine zu starten:"+"\n"+
+				"Entweder den LoadBalancer -lp PORT (-least ODER -weight)"+"\n"+
+				"Oder Client -cp PORT -m ZAHL -u URL:PORT"+"\n"+
+				"Oder -sp PORT -u URL:PORT");
+
+
 		CLI cli = new CLI();
 		cli.addArguments(args);
 
 
 		if(!(cli.value("LoadBalancer Port").equals("") || cli.value("LoadBalancer Port").isEmpty())){
-			LoadBalancer lb = new LoadBalancer(Integer.parseInt(cli.value("LoadBalancer Port")));
+			if(cli.value("Weighted Distribution").equals("EXIST")){
+				LoadBalancer lb = new LoadBalancer(Integer.parseInt(cli.value("LoadBalancer Port")),2);
+			}else{
+				LoadBalancer lb = new LoadBalancer(Integer.parseInt(cli.value("LoadBalancer Port")),1);
+			}
 		}
 
 
@@ -33,6 +44,12 @@ public class Main {
 			if(!(cli.value("Adresse des LB(url:port)").equals("") || cli.value("Adresse des LB(url:port)").isEmpty())){
 				server.connectToLB(cli.value("Adresse des LB(url:port)").split(":")[0],
 						Integer.parseInt(cli.value("Adresse des LB(url:port)").split(":")[1]));
+				while(true){
+					Scanner scanner = new Scanner(System.in);
+					if(scanner.hasNext()){
+						if(scanner.next().equals("Logout"))server.logout();
+					}
+				}
 			}else{
 				System.out.println("Es wurde Adresse zum LoadBalancer angegeben");
 			}

@@ -13,7 +13,7 @@ import org.apache.commons.cli.ParseException;
 
 public class CLI {
 	public static String[][] optionen = {
-		{"lp", "true", "LoadBalancer Port"},
+		{"lp", "true", "LoadBalancer Port"},{"least", "false", "Least Connection"},{"weight", "false", "Weighted Distribution"},
 		{"cp", "true", "Client Port"},
 		{"sp", "true", "Server Port"},
 		{"lu", "true", "Adresse des LB(url:port)"}};
@@ -34,7 +34,7 @@ public class CLI {
 				System.out.print(" -"+optionen[i][j]+" "+optionen[i][j+2]);
 				options.addOption(optionen[i][j], Boolean.parseBoolean(optionen[i][++j]), optionen[i][++j]);
 			}
-			if(i == 0 || i == 1|| i == 2)System.out.println();
+			if(i == 2 || i == 3|| i == 4)System.out.println();
 		}
 		System.out.println();
 	}
@@ -104,7 +104,7 @@ public class CLI {
 		if(!this.arguments.get(key).equals("")){
 			value = this.arguments.get(key);
 		}
-		}catch(NullPointerException e){}
+		}catch(NullPointerException e){value="EXIST";}
 		return value;
 	}
 

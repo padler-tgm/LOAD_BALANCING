@@ -5,10 +5,10 @@ public class LoadBalancer extends Thread{
 	private SocketClient lbc;//als LB fuer Server
 	private Algo alg;
 
-	public LoadBalancer(int port){
+	public LoadBalancer(int port, int mode){
 		System.out.println("LoadBalancer läuft auf PORT: "+port);
 		this.lbs = new SocketServer(port);
-		this.alg = new Algo();
+		this.alg = new Algo(mode);
 		this.initiate();
 	}
 
@@ -36,8 +36,11 @@ public class LoadBalancer extends Thread{
 						
 					}else if((request.split(" ")[0]).equals("Reply")){//SERVER ANTWORTET AUF ANFRAGE
 						String ip = request.split(" ")[2];
-						System.out.println("EMPFAENGT ERGEBNIS VOM SERVER "+ip);
+						System.out.println("EMPFAENGT ERGEBNIS VOM SERVER "+ip.split("\\?")[1]);
 						this.pull(request.split(" ")[1],this.alg.getRelationClient(ip));//SCHICKT ANTWORT AN CLIENT 
+						
+					}else if((request.split(" ")[0]).equals("Logout")){//SERVER ABMELDEN
+						this.alg.deleteServer(request);
 						
 					}else{//ANFRAGE VOM CLIENT
 						System.out.println("ANFRAGE VOM CLIENT "+request.split(",")[1]+" :"+request.split(",")[0]);

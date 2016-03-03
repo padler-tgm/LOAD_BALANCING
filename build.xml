@@ -47,7 +47,6 @@
         <move todir="${buildpath}/javadoc">
             <fileset dir="${doc}"/>
         </move>
-        <echo message="Für das Ausführen des Jar müssen Sie runjar eingeben!!"/>
 	</target>
     
     <target name="doc">
@@ -67,7 +66,7 @@
 		</copy>
 	</target>
     
-    <target name="jar" depends="input,input2">
+    <target name="jar" depends="input">
         <mkdir dir="${jar}"/>
         <manifestclasspath property="jar.classpath" jarfile="${jar}/${programm}1.jar">
             <classpath refid="classpath"/>
@@ -76,7 +75,7 @@
         <jar destfile="${jar}/${programm}1.jar" basedir="${class}">
             <fileset dir="${source}" />
             <manifest>
-                <attribute name="Main-Class" value="${mainclass}"/>
+                <attribute name="Main-Class" value="dezsys.Main"/>
                 <attribute name="Class-Path" value="${jar.classpath}"/>
             </manifest>
             <zipgroupfileset dir="${lib}" includes="**/*.jar" />
@@ -96,9 +95,9 @@
 		<input message="Jar-Name?" addproperty="programm"/>
 	</target>
     
-    <target name="input2">
+    <!--<target name="input2">
 		<input message="Main-Class, falls in einem Package dann Packagename.MainClass?" addproperty="mainclass"/>
-	</target>
+	</target>-->
     
     <target name="runjar">
         <loadfile property="file" srcfile="${buildpath}/build.properties" />

@@ -10,18 +10,22 @@ import java.util.UUID;
 public class Algo extends Thread{
 	//LIEFERT DIE IP DES SERVERS
 	//BENÖTIGT SERVER POLL MIT ALLEN IPS
-	private ArrayList<String> server;
+	private HashMap<String, ServerProperties> server;
 	private HashMap<String, Connection> relation;
+	private int mode;
 
-	public Algo(){
-		this.server = new ArrayList<>();
+	public Algo(int mode){
+		this.server = new HashMap<>();
 		this.relation = new HashMap<>();
+		this.mode = mode;
+		if(mode == 1)System.out.println("Least Connection");
+		if(mode == 2)System.out.println("Weighted Distribution");
 		this.start();
 	}
 
 	public void addServer(String url){
-		if(!this.server.contains(url)){
-			this.server.add(url);
+		if(!this.server.containsKey(url)){
+			this.server.put(url,new ServerProperties());
 		}
 	}
 
@@ -37,7 +41,16 @@ public class Algo extends Thread{
 
 
 	public void deleteServer(String url){
-		server.remove(url);
+		Iterator<Entry<String, Connection>> it = this.relation.entrySet().iterator();
+		while (it.hasNext()){//DELETE SERVER FROM RELEATION MAP
+			Entry<String, Connection> entry = it.next();
+			String server = entry.getKey();
+			if(server.contains(url.split(" ")[1])){
+				it.remove();
+			}
+		}
+		System.out.println("DELETE SERVER: "+url.split(" ")[1]);
+		server.remove(url);//DELETE SERVER FROM LIST
 	}
 
 	/**
@@ -55,7 +68,11 @@ public class Algo extends Thread{
 				System.out.println("SESSION");
 				client.increase();//ERHOEHT CONNECTION ATTRIBUT
 				this.relation.put(server, client);//SPEICHERT DEN SELBEN CLIENT NUR DIE CONNECTION WURDE UM 1 ERHOEHT
+				ServerProperties pro = this.server.get(server.split("\\?")[1]);
+				pro.increaseAnzCon();//ERHOEHT DIE CONNECTION ANZAHL AM SERVER
+				this.server.put(server.split("\\?")[1], pro);
 				session = true;
+				System.out.println(server);
 				s = server;
 				break;
 			}
@@ -63,8 +80,7 @@ public class Algo extends Thread{
 
 		if(!session){
 			System.out.println("FIRST TIME");
-			s = UUID.randomUUID()+"?"+this.server.get(0);//STATTDESSEN ALGO
-			System.out.println(s);
+			s = UUID.randomUUID()+"?"+this.getServer(this.mode);//STATTDESSEN ALGO
 			this.relation.put(s, new Connection(url));
 		}
 		return s;
@@ -79,7 +95,15 @@ public class Algo extends Thread{
 			for(Entry<String, Connection> entry : this.relation.entrySet()) {
 				String key = entry.getKey();
 				Connection value = entry.getValue();
-				zahler.put(key, value);
+				Connection con = new Connection(key.split("\\?")[1]);
+				con.setConnection(value.getConnection());
+				zahler.put(key, con);
+			}
+			
+			for(Entry<String, Connection> entry : zahler.entrySet()) {
+				String key = entry.getKey();
+				Connection value = entry.getValue();
+				System.out.println("BEFORE Zahler: "+key+" "+value.getConnection());
 			}
 
 			completeTask();
@@ -87,24 +111,43 @@ public class Algo extends Thread{
 			System.out.println("TRY TO DELETE");
 			System.out.println(this.relation.entrySet().size());
 			Iterator<Entry<String, Connection>> it = this.relation.entrySet().iterator();
-			Iterator<Entry<String, Connection>> it1 = zahler.entrySet().iterator();
+
+			for(Entry<String, Connection> entry : zahler.entrySet()) {
+				String key = entry.getKey();
+				Connection value = entry.getValue();
+				System.out.println("AFTER Zahler: "+key+" "+value.getConnection());
+			}
+			
 			while (it.hasNext()){
 				Entry<String, Connection> entry = it.next();
 				String newKey = entry.getKey();
 				Connection newConnection = entry.getValue();
-				while (it1.hasNext()){
-					Entry<String, Connection> entry1 = it1.next();
-					String oldKey = entry1.getKey();
-					Connection oldConnection = entry1.getValue();
-					//WENN DER CLIENT KEINE ANFRAGEN MEHR GETAETIGT HAT
-					if(newKey.equals(oldKey) && newConnection.getConnection() == oldConnection.getConnection()){
-						if(this.relation.containsKey(newKey)){
-							System.out.println("DELETE SESSION "+newKey);
-							it.remove();
-						}
+				try{
+					if(zahler.get(newKey).getConnection() == newConnection.getConnection()){
+						System.out.println("OLD "+zahler.get(newKey).getConnection()+" NEW "+newConnection.getConnection());
+						System.out.println("DELETE SESSION "+newKey);
+						it.remove();
 					}
-				}
+				}catch(NullPointerException e){}
 			}
+
+			//			while (it.hasNext()){
+			//				Entry<String, Connection> entry = it.next();
+			//				String newKey = entry.getKey();
+			//				Connection newConnection = entry.getValue();
+			//				while (it1.hasNext()){
+			//					Entry<String, Connection> entry1 = it1.next();
+			//					String oldKey = entry1.getKey();
+			//					Connection oldConnection = entry1.getValue();
+			//					//WENN DER CLIENT KEINE ANFRAGEN MEHR GETAETIGT HAT
+			//					if(newKey.equals(oldKey) && newConnection.getConnection() == oldConnection.getConnection()){
+			//						if(this.relation.containsKey(newKey)){
+			//							System.out.println("DELETE SESSION "+newKey);
+			//							it.remove();
+			//						}
+			//					}
+			//				}
+			//			}
 		}
 	}
 
@@ -117,37 +160,52 @@ public class Algo extends Thread{
 		}
 	}
 
-	//	private String algoLeastCon() {
-	//		String ip = "";
-	//		int minAnz=999;
-	//		int ind=-1;
-	//		for(int i =0; i < server.size() ; i++){
-	//			if(minAnz > server.get(i).getAnzCon()){
-	//				minAnz = server.get(i).getAnzCon();
-	//				ind = i;
-	//			}
-	//		}
-	//		ip = server.get(ind).getIP();
-	//		//erhoehen des counters
-	//		server.get(ind).connect();
-	//		return ip;
-	//		
-	//	}
+	private String algoLeastCon() {
+		String ip = "";
+		ServerProperties s = null;
+		double minAnz=999;
+		for(Entry<String, ServerProperties> entry : this.server.entrySet()) {
+			String key = entry.getKey();
+			ServerProperties value = entry.getValue();
+			if(minAnz > value.getAnzCon()){
+				minAnz = value.getAnzCon();
+				ip = key;
+				s = value;
+			}
+		}
+		//erhoehen des counters
+		s.increaseAnzCon();
+		this.server.put(ip, s);
+		return ip;
+
+	}
 	//	
-	//	private String algoWeightDist() {
-	//		return "";
-	//		
-	//	}
-	//	public String getServer(int art){
-	//		String ip="";
-	//		if(art == 1){
-	//			ip = this.algoLeastCon();
-	//		}else{
-	//			if(art == 2){
-	//				ip = this.algoWeightDist();
-	//			}
-	//		}
-	//		
-	//		return ip;
-	//	}
+	private String algoWeightDist() {
+		String ip ="";
+		ServerProperties s = null;
+		double leistung=999;
+		for(Entry<String, ServerProperties> entry : this.server.entrySet()) {
+			String key = entry.getKey();
+			ServerProperties value = entry.getValue();
+			if(leistung > value.calculateLeistung()){
+				leistung = value.calculateLeistung();
+				ip = key;
+				s = value;
+			}
+		}
+		//erhoehen des counters
+		s.increaseAnzCon();
+		this.server.put(ip, s);
+		return ip;
+	}
+
+	private String getServer(int art){
+		String ip="";
+		if(art == 1){
+			ip = this.algoLeastCon();
+		}else if(art == 2){
+			ip = this.algoWeightDist();
+		}
+		return ip;
+	}
 }
