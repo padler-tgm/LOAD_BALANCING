@@ -7,7 +7,7 @@ public class ServerProperties {
 	
 	public ServerProperties(){
 		this.anzCon = 0;
-		this.gewichtung = 1;
+		this.gewichtung =  (int) ((Math.random()*10)+1);;//VON 1-10
 	}
 
 	public double getAnzCon() {
